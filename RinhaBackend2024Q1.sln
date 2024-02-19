@@ -1,0 +1,35 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34607.119
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RinhaBackend2024Q1", "RinhaBackend2024Q1\RinhaBackend2024Q1.csproj", "{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FABEDFF9-7127-4514-BE90-79522946CF60}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{096EFCB5-1C6D-46CF-BDA4-0F8036DDC955}"
+	ProjectSection(SolutionItems) = preProject
+		Solution Items\SQL\ddls.sql = Solution Items\SQL\ddls.sql
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{096EFCB5-1C6D-46CF-BDA4-0F8036DDC955} = {FABEDFF9-7127-4514-BE90-79522946CF60}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B496087B-921A-4A3F-8983-F29F48E1A43B}
+	EndGlobalSection
+EndGlobal
