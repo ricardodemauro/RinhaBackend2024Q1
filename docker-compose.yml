@@ -66,6 +66,8 @@ services:
     volumes:
       - ./mysql/dump:/docker-entrypoint-initdb.d
       - ./mysql/my.cnf:/etc/mysql/my.cnf
+      - type: tmpfs
+        target: /var/lib/postgresql/data
     restart: always
     ports:
       - "3306:3306"
