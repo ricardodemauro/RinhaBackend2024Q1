@@ -1,10 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
+   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>63f97178-9039-46f3-a9da-c7fd311ece26</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <InvariantGlobalization>true</InvariantGlobalization>
+
+    <DefineConstants Condition="'$(PublishAot)' == 'true'">
+      $(DefineConstants);IS_NATIVE_AOT
+    </DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

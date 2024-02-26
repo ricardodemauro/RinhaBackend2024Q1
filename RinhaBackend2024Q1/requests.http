@@ -1,13 +1,13 @@
-﻿GET https://localhost:7272/clientes/1/extrato
+﻿GET http://localhost:9999/clientes/1/extrato
 
 
 ###
 
-POST https://localhost:7272/clientes/1/transacoes
+POST http://localhost:9999/clientes/1/transacoes
 Content-Type: application/json
 
 {
     "valor": 400,
-    "tipo" : "c",
+    "tipo" : "d",
     "descricao" : "descricao"
 }

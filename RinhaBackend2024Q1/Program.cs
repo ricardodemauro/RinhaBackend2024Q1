@@ -5,7 +5,12 @@ using RinhaBackend2024Q1;
 using System.Net.Mime;
 using System.Text.Json;
 
+
+#if IS_NATIVE_AOT
+var builder = WebApplication.CreateSlimBuilder(args);
+#else
 var builder = WebApplication.CreateBuilder(args);
+#endif
 
 builder.Services.AddHealthChecks()
     .AddMySql(connectionString: builder.Configuration.GetConnectionString("Default"));

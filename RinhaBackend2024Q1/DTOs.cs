@@ -32,7 +32,7 @@ public class Saldo
     public int Total { get; set; }
 
     [JsonPropertyName("data_extrato")]
-    public DateTime DataExtrato { get; set; }
+    public string DataExtrato { get; set; }
 
     public int Limite { get; set; }
 }

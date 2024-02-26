@@ -22,6 +22,7 @@ SELECT
     , A.CD_TYPE
     , A.DS_TRANSACAO
     , A.DT_REALIZADO_FORMATTED
+    , date_format(NOW(5), '%Y-%m-%dT%H:%i:%s.%fZ')
 FROM TRANSACAO_VW A
 WHERE A.ID_CLIENTE = @P_ID_CLIENTE
 ORDER BY A.DT_REALIZADO DESC
@@ -47,7 +48,7 @@ LIMIT 10;
 
         var saldo = new Saldo
         {
-            DataExtrato = DateTime.Now,
+            DataExtrato = reader.GetString(6),
             Limite = reader.GetInt32(0),
             Total = reader.GetInt32(1),
         };
