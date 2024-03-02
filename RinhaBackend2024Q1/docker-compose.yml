@@ -49,7 +49,7 @@ services:
 
   envoy:
     image: envoyproxy/envoy:v1.29-latest
-    container_name: rinhaproxy
+    container_name: rproxy
     network_mode: host
     volumes:
       - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
@@ -63,29 +63,49 @@ services:
           memory: '134MB'
 
   db:
-    image: mysql:latest
-    container_name: rinhadb
+    image: mariadb:lts-jammy
+    container_name: rdb
     network_mode: host
-    #volumes:
-    #  - db_data:/var/lib/mysql
+    command: --skip-log-bin
     volumes:
-      - ./mysql-dump:/docker-entrypoint-initdb.d
+      - ./mysql/dump/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./mysql/my.cnf:/etc/mysql/my.cnf:ro
+    tmpfs:
+      - /var/lib/mysql
     restart: always
-    ports:
-      - "3306:3306"
     environment:
-      MYSQL_ROOT_USER: root
-      MYSQL_ROOT_PASSWORD: password.123
-      MYSQL_DATABASE: rinha
-      MYSQL_USER: rinha
-      MYSQL_PASSWORD: password.123
+      MARIADB_ROOT_USER: root
+      MARIADB_ROOT_PASSWORD: password.123
+      MARIADB_DATABASE: rinha
+      MARIADB_USER: rinha
+      MARIADB_PASSWORD: password.123
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 1
 
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      interval: 15s
+      test: 
+        [
+          "CMD",
+          "healthcheck.sh",
+          "--su-mysql",
+          "--connect",
+          "--innodb_initialized"
+        ]
+      interval: 5s
       timeout: 5s
       retries: 10
 
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '256MB'
+
+          
   phpmyadmin:
     depends_on:
       - db
