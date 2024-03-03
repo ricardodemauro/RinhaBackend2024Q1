@@ -8,7 +8,7 @@ POST http://localhost:9999/clientes/1/transacoes
 Content-Type: application/json
 
 {
-    "valor": 400,
+    "valor": 600,
     "tipo" : "d",
     "descricao" : "descricao"
 }
