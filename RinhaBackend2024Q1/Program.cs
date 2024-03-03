@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 #endif
 
 builder.Services.AddHealthChecks()
-    .AddMySql(connectionString: builder.Configuration.GetConnectionString("Default"));
+    .AddNpgSql(connectionString: builder.Configuration.GetConnectionString("Default"));
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {

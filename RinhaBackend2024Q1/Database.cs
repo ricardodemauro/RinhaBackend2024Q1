@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Connections;
-using MySqlConnector;
+using Npgsql;
 
 namespace RinhaBackend2024Q1;
 
@@ -16,16 +16,16 @@ public sealed class DbService
 
     const string _sqlExtrato = @"
 SELECT
-    A.NR_LIMITE
-    , A.NR_SALDO
-    , A.NR_VALOR
-    , A.CD_TYPE
-    , A.DS_TRANSACAO
-    , A.DT_REALIZADO_FORMATTED
-    , date_format(NOW(5), '%Y-%m-%dT%H:%i:%s.%fZ')
-FROM TRANSACAO_VW A
-WHERE A.ID_CLIENTE = @P_ID_CLIENTE
-ORDER BY A.DT_REALIZADO DESC
+    A.""NR_LIMITE""
+    , A.""NR_SALDO""
+    , A.""NR_VALOR""
+    , A.""CD_TYPE""
+    , A.""DS_TRANSACAO""
+    , A.""dt_realizado_formatted""
+    , to_char(now(), 'YYYY-MM-DD""T""HH:MI:SS:MS""Z""'::text) AS DT_EXTRATO
+FROM ""TRANSACAO_VW"" A
+WHERE A.""ID_CLIENTE"" = @P_ID_CLIENTE
+ORDER BY A.""DT_REALIZADO"" DESC
 LIMIT 10;
 ";
 
@@ -33,9 +33,9 @@ LIMIT 10;
     {
         if (_clientIds.Contains(id) == false) return Results.NotFound();
 
-        using var conn = new MySqlConnection(_connectionString);
+        using var conn = new NpgsqlConnection(_connectionString);
 
-        using var cmd = new MySqlCommand(_sqlExtrato, conn);
+        using var cmd = new NpgsqlCommand(_sqlExtrato, conn);
         cmd.Parameters.AddWithValue("@P_ID_CLIENTE", id);
 
         await conn.OpenAsync(cancellationToken);
@@ -45,6 +45,8 @@ LIMIT 10;
 
         await reader.ReadAsync(cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
+
+        int idCli = reader.GetOrdinal("NR_LIMITE");
 
         var saldo = new Saldo
         {
@@ -84,44 +86,41 @@ LIMIT 10;
     {
         if (_clientIds.Contains(id) == false) return Results.NotFound();
 
-        using var conn = new MySqlConnection(_connectionString);
+        using var conn = new NpgsqlConnection(_connectionString);
 
-        using var cmd = new MySqlCommand("CRIAR_TRANSACAO", conn);
+        using var cmd = new NpgsqlCommand("select FN_criar_transacao_v2($1, $2, $3, $4)", conn)
+        {
+            Parameters =
+            {
+                new NpgsqlParameter<int>() { Value = id },
+                new NpgsqlParameter<int>() { Value = transacao.Tipo == 'c' ? transacao.Valor : transacao.Valor * -1 },
+                new NpgsqlParameter<char>() { Value = transacao.Tipo },
+                new NpgsqlParameter<string>() { Value = transacao.Descricao }
+            }
+        };
 
-        cmd.CommandType = System.Data.CommandType.StoredProcedure;
-
-        cmd.Parameters.AddWithValue("@P_ID_CLIENTE", id);
-        cmd.Parameters.AddWithValue("@P_NR_VALUE", transacao.Tipo == 'c' ? transacao.Valor : transacao.Valor * -1);
-        cmd.Parameters.AddWithValue("@P_CD_TYPE", transacao.Tipo);
-        cmd.Parameters.AddWithValue("@P_DS_TRANSACAO", transacao.Descricao);
-
-        var pOut = cmd.CreateParameter();
-        pOut.Direction = System.Data.ParameterDirection.Output;
-        pOut.ParameterName = "@P_OUT_RESULT";
-        pOut.DbType = System.Data.DbType.Int32;
-        cmd.Parameters.Add(pOut);
-
-        var pOutLimite = cmd.CreateParameter();
-        pOutLimite.Direction = System.Data.ParameterDirection.Output;
-        pOutLimite.ParameterName = "@P_OUT_LIMITE";
-        pOutLimite.DbType = System.Data.DbType.Int32;
-        cmd.Parameters.Add(pOutLimite);
-
-        var pOutSaldo = cmd.CreateParameter();
-        pOutSaldo.Direction = System.Data.ParameterDirection.Output;
-        pOutSaldo.ParameterName = "@P_OUT_SALDO";
-        pOutSaldo.DbType = System.Data.DbType.Int32;
-        cmd.Parameters.Add(pOutSaldo);
+        cmd.CommandType = System.Data.CommandType.Text;
 
         await conn.OpenAsync();
 
-        await cmd.ExecuteNonQueryAsync();
+        using var reader = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.CloseConnection);
 
-        var resu = (int)pOut.Value;
+        await reader.ReadAsync();
+
+        var record = reader.GetFieldValue<object[]>(0);
+        if (record.Length == 1)
+        {
+            throw new InvalidOperationException("Invalid failure code.");
+        }
+        var resu = (int)record[0];
 
         await conn.CloseAsync();
 
-        if (resu == 1) return Results.Ok(new { limite = (int)pOutLimite.Value, saldo = (int)pOutSaldo.Value });
+        if (resu == 1)
+        {
+            var (saldo, limite) = ((int)record[1], (int)record[2]);
+            return Results.Ok(new TransacaoResult { Limite = limite, Saldo = saldo });
+        }
 
         return Results.UnprocessableEntity();
     }
