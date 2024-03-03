@@ -12,9 +12,7 @@ services:
       - POSTGRES_USER=rinha
       - POSTGRES_DB=rinha
     volumes:
-      #- ./sql/ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql:ro
-      #- ./sql/criartransacao.sql:/docker-entrypoint-initdb.d/11-criartransacao.sql:ro
-      #- ./sql/resetdb.sql:/docker-entrypoint-initdb.d/21-resetdb.sql:ro
+      - ./sql/ddl-postgresql.sql:/docker-entrypoint-initdb.d/01-ddl.sql:ro
       - type: tmpfs
         target: /var/lib/postgresql/data
     deploy:

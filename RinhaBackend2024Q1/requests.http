@@ -15,17 +15,17 @@ Content-Type: application/json
 
 ###
 
+
 GET httpS://localhost:7272/clientes/1/extrato
 
 ###
-
 
 
 POST httpS://localhost:7272/clientes/1/transacoes
 Content-Type: application/json
 
 {
-    "valor": 900400,
+    "valor": 100,
     "tipo" : "d",
     "descricao" : "descricao"
 }

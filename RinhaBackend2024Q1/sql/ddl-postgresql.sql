@@ -4,44 +4,34 @@ SET idle_in_transaction_session_timeout = 0;
 SET client_min_messages = warning;
 SET row_security = off;
 
-CREATE UNLOGGED TABLE public."CLIENTE"
+-- Table: public.CLIENTE
+
+-- DROP TABLE IF EXISTS public."CLIENTE";
+
+CREATE UNLOGGED TABLE IF NOT EXISTS public."CLIENTE"
 (
     "ID_CLIENTE" integer NOT NULL,
     "NR_LIMITE" integer NOT NULL,
     "NR_SALDO" integer NOT NULL,
-    PRIMARY KEY ("ID_CLIENTE")
-)
-
-USING heap TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS public."CLIENTE" OWNER to rinha;
-
-drop sequence IF EXISTS CLIENTE_SEQ;
-CREATE SEQUENCE CLIENTE_SEQ INCREMENT 1 START 1;
-
-CREATE UNLOGGED TABLE public."TRANSACAO"
-(
-    "ID_TRANSACAO" integer,
-    "ID_CLIENTE" integer NOT NULL,
-    "NR_VALOR" integer,
-    "CD_TYPE" character varying(1),
-    "DS_TRANSACAO" character varying(10),
-    "DT_REALIZADO" timestamp without time zone DEFAULT NOW(),
-    PRIMARY KEY ("ID_TRANSACAO")
+    CONSTRAINT "CLIENTE_pkey" PRIMARY KEY ("ID_CLIENTE")
 );
 
-drop sequence IF EXISTS TRANSACAO_SEQ;
-CREATE SEQUENCE TRANSACAO_SEQ INCREMENT 1 START 1;
+CREATE INDEX IF NOT EXISTS "IDX_NR_LIMITE"
+    ON "CLIENTE" USING btree
+    ("NR_LIMITE" ASC NULLS LAST, "NR_SALDO" ASC NULLS LAST)
+    WITH (deduplicate_items=True);
 
-ALTER TABLE IF EXISTS public."TRANSACAO" OWNER to rinha;
+CREATE UNLOGGED TABLE IF NOT EXISTS public."TRANSACAO"
+(
+    "ID_TRANSACAO" integer NOT NULL,
+    "ID_CLIENTE" integer NOT NULL,
+    "NR_VALOR" integer,
+    "CD_TYPE" character varying(1) COLLATE pg_catalog."default",
+    "DS_TRANSACAO" character varying(10) COLLATE pg_catalog."default",
+    "DT_REALIZADO" timestamp(3) without time zone,
+    CONSTRAINT "TRANSACAO_pkey" PRIMARY KEY ("ID_TRANSACAO")
+);
 
-CREATE UNLOGGED SEQUENCE IF NOT EXISTS public."CLIENTE_SEQ" INCREMENT 1 START 1;
-
-ALTER SEQUENCE public."CLIENTE_SEQ" OWNER TO rinha;
-
-CREATE UNLOGGED SEQUENCE public."TRANSACAO_SEQ" INCREMENT 1 START 1;
-
-ALTER SEQUENCE public."TRANSACAO_SEQ" OWNER TO rinha;
 
 
 INSERT INTO "CLIENTE" ("ID_CLIENTE", "NR_SALDO", "NR_LIMITE") VALUES (1, 0, -100000);
@@ -51,72 +41,78 @@ INSERT INTO "CLIENTE" ("ID_CLIENTE", "NR_SALDO", "NR_LIMITE") VALUES (4, 0, -100
 INSERT INTO "CLIENTE" ("ID_CLIENTE", "NR_SALDO", "NR_LIMITE") VALUES (5, 0, -500000);
 
 
-INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (nextval('TRANSACAO_SEQ'), 1, 0, 'S', 'SYSTEM', NOW());
-INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (nextval('TRANSACAO_SEQ'), 2, 0, 'S', 'SYSTEM', NOW());
-INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (nextval('TRANSACAO_SEQ'), 3, 0, 'S', 'SYSTEM', NOW());
-INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (nextval('TRANSACAO_SEQ'), 4, 0, 'S', 'SYSTEM', NOW());
-INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (nextval('TRANSACAO_SEQ'), 5, 0, 'S', 'SYSTEM', NOW());
+INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (1, 1, 0, 'S', 'SYSTEM', NOW());
+INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (2, 2, 0, 'S', 'SYSTEM', NOW());
+INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (3, 3, 0, 'S', 'SYSTEM', NOW());
+INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (4, 4, 0, 'S', 'SYSTEM', NOW());
+INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO") VALUES (5, 5, 0, 'S', 'SYSTEM', NOW());
 
 
-CREATE VIEW public."TRANSACAO_VW"
+CREATE OR REPLACE VIEW public."TRANSACAO_VW"
  AS
-select
-    A."NR_LIMITE",
-    A."ID_CLIENTE",
-    A."NR_SALDO",
-    B."NR_VALOR",
-    B."CD_TYPE",
-    B."DS_TRANSACAO",
-    B."DT_REALIZADO",
-    TO_CHAR("DT_REALIZADO", 'YYYY-MM-DD"T"HH:MI:SS:MS"Z"')  AS DT_REALIZADO_FORMATTED
-FROM "CLIENTE" A
-INNER join "TRANSACAO" B ON B."ID_CLIENTE" = A."ID_CLIENTE";
+ SELECT a."NR_LIMITE",
+    a."ID_CLIENTE",
+    a."NR_SALDO",
+    b."NR_VALOR",
+    b."CD_TYPE",
+    b."DS_TRANSACAO",
+    b."DT_REALIZADO",
+    to_char(b."DT_REALIZADO", 'YYYY-MM-DD"T"HH:MI:SS:MS"Z"'::text) AS dt_realizado_formatted
+   FROM "CLIENTE" a
+     JOIN "TRANSACAO" b ON b."ID_CLIENTE" = a."ID_CLIENTE";
 
-ALTER TABLE public."TRANSACAO_VW"
-    OWNER TO rinha;
+CREATE UNLOGGED SEQUENCE IF NOT EXISTS public.transacao_seq
+    INCREMENT 1
+    START 10;
 
+CREATE OR REPLACE FUNCTION public.fn_criar_transacao_v2(
+	p_id_cliente integer,
+	p_nr_value integer,
+	p_cd_type character varying,
+	p_ds_transacao character varying)
+    RETURNS TABLE(nr_saldo integer, nr_limite integer, bl_result integer) 
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+    ROWS 1000
 
-create or replace procedure CRIAR_TRANSACAO(
-   IN P_ID_CLIENTE integer,
-   IN P_NR_VALUE integer,
-   IN P_CD_TYPE  character varying(1),
-   IN P_DS_TRANSACAO character varying(10),
-   OUT P_OUT_NR_SALDO integer,
-   OUT P_OUT_NR_LIMITE integer,
-   OUT P_OUT_RESULT integer
-)
-language plpgsql    
-as $$
+AS $BODY$
+
+DECLARE
+   P_OUT_SALDO int := 0;
+   P_OUT_LIMITE int := 0;
+   P_OUT_RESULT int := 0;
+   
+   P_RETURN RECORD;
+   
 begin
     
-	SET P_OUT_RESULT = 0;
-	
-    UPDATE "CLIENTE"
-    SET "NR_SALDO" = "NR_SALDO" + "P_NR_VALUE"
-    WHERE "ID_CLIENTE" = "P_ID_CLIENTE"
-    AND "NR_LIMITE" <= ("NR_SALDO" + "P_NR_VALUE")
-    RETURNING "NR_SALDO", ABS("NR_LIMITE")
-	INTO P_OUT_NR_SALDO, P_OUT_NR_LIMITE;
-	
-	commit;
 
-    IF P_OUT_NR_SALDO is not null THEN
+    UPDATE "CLIENTE"
+       SET "NR_SALDO" = "NR_SALDO" + "p_nr_value"
+    WHERE "ID_CLIENTE" = "p_id_cliente"
+      AND "NR_LIMITE" <= ("NR_SALDO" + "p_nr_value")
+    RETURNING "NR_SALDO", ABS("NR_LIMITE")	INTO P_OUT_SALDO, P_OUT_LIMITE;
+	
+    IF P_OUT_SALDO is not null THEN
 		
         INSERT INTO "TRANSACAO" ("ID_TRANSACAO", "ID_CLIENTE", "NR_VALOR", "CD_TYPE", "DS_TRANSACAO", "DT_REALIZADO")
         VALUES
         (
 			nextval('transacao_seq'),
-            "P_ID_CLIENTE",
-            "P_NR_VALUE",
-            "P_CD_TYPE",
-            "P_DS_TRANSACAO",
+            "p_id_cliente",
+            "p_nr_value",
+            "p_cd_type",
+            "p_ds_transacao",
             NOW()
         );
 
-        COMMIT;
-
-        SET P_OUT_RESULT = 1;
+        P_OUT_RESULT := 1;
     END IF;
 
+	RETURN QUERY SELECT P_OUT_RESULT  BL_RESULT,  P_OUT_SALDO  NR_SALDO, P_OUT_LIMITE  NR_LIMITE;
     
-end;$$;
+
+END;
+$BODY$;
+
