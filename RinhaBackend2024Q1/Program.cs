@@ -24,7 +24,7 @@ var app = builder.Build();
 
 DbService db = new DbService(builder.Configuration.GetConnectionString("Default"));
 
-app.MapGet("/", () => "Hello World!");
+app.MapGet("/", () => $"Hello from {Environment.GetEnvironmentVariable("TRAIL")}");
 
 app.UseHealthChecks("/healthz", new HealthCheckOptions
 {

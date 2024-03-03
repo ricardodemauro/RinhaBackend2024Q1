@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{096EFCB5-1C6
 		Solution Items\SQL\ddls.sql = Solution Items\SQL\ddls.sql
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RinhaBackendYARP", "RinhaBackendYARP\RinhaBackendYARP.csproj", "{4937CDA6-9F44-4D81-A498-08280331FA40}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -22,6 +24,10 @@ Global
 		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4937CDA6-9F44-4D81-A498-08280331FA40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4937CDA6-9F44-4D81-A498-08280331FA40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4937CDA6-9F44-4D81-A498-08280331FA40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4937CDA6-9F44-4D81-A498-08280331FA40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
