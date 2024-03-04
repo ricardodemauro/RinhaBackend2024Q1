@@ -7,13 +7,13 @@ services:
       dockerfile: Dockerfile
     container_name: r-api_pg-1
     network_mode: host
+    volumes:
+      - sock_vol:/tmp/:rw
     environment: 
       ConnectionStrings__Default: Server=127.0.0.1;Database=rinha;Uid=root;Pwd=password.123;
       ASPNETCORE_ENVIRONMENT: Production
-      #ASPNETCORE_URLS: http://+:8097
-      ASPNETCORE_URLS: https://+:9997;http://+:8097
-      ASPNETCORE_Kestrel__Certificates__Default__Password: password.123
-      ASPNETCORE_Kestrel__Certificates__Default__Path: /app/https/aspnetapp.pfx
+      ASPNETCORE_URLS: http://+:8098
+      SOCKET_ADDRESS: /tmp/kestrel-api1.sock
       TRAIL: P_1
     ulimits:
       nofile:
@@ -31,13 +31,13 @@ services:
       dockerfile: Dockerfile
     container_name: r-api_pg-2
     network_mode: host
+    volumes:
+      - sock_vol:/tmp/:rw
     environment: 
       ConnectionStrings__Default: Server=127.0.0.1;Database=rinha;Uid=root;Pwd=password.123;
       ASPNETCORE_ENVIRONMENT: Production
-      #ASPNETCORE_URLS: http://+:8097
-      ASPNETCORE_URLS: https://+:9998;http://+:8098
-      ASPNETCORE_Kestrel__Certificates__Default__Password: password.123
-      ASPNETCORE_Kestrel__Certificates__Default__Path: /app/https/aspnetapp.pfx
+      ASPNETCORE_URLS: http://+:8097
+      SOCKET_ADDRESS: /tmp/kestrel-api2.sock
       TRAIL: P_2
     ulimits:
       nofile:
@@ -48,6 +48,25 @@ services:
         limits:
           cpus: '0.3'
           memory: '80MB'
+
+  yarp:
+    image: ricardomauro/rinha-2024q1-dotnet-yarp:latest
+    container_name: rpy-proxy
+    network_mode: host
+    environment: 
+      DOTNET_URLS: http://*:9999
+      ASPNETCORE_ENVIRONMENT: Production
+    volumes:
+      - ./yarp/secrets.json:/app/secrets.json:ro
+      - sock_vol:/tmp/:rw
+    depends_on:
+      - api1
+      - api2
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: '134MB'
 
   db:
     image: postgres:16.2
@@ -78,3 +97,9 @@ services:
       PGADMIN_DEFAULT_PASSWORD: password.123
       PGADMIN_CONFIG_SERVER_MODE: 'False'
     restart: unless-stopped
+
+volumes:
+  sock_vol:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

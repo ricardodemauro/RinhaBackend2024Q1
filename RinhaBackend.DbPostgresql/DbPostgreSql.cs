@@ -1,15 +1,14 @@
-﻿using Microsoft.AspNetCore.Connections;
-using Npgsql;
+﻿using Npgsql;
 
-namespace RinhaBackend2024Q1;
+namespace RinhaBackend.DbPostgresql;
 
-public sealed class DbService
+public sealed class DbPostgreSql
 {
     readonly string _connectionString;
 
     readonly HashSet<int> _clientIds = new HashSet<int> { 1, 2, 3, 4, 5 };
 
-    public DbService(string connectionString)
+    public DbPostgreSql(string connectionString)
     {
         _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
     }
@@ -42,6 +41,7 @@ LIMIT 10;
         cancellationToken.ThrowIfCancellationRequested();
 
         using var reader = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.CloseConnection, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
         await reader.ReadAsync(cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
@@ -82,9 +82,11 @@ LIMIT 10;
         return Results.Ok(extrato);
     }
 
-    internal async Task<IResult> Transacao(int id, TransacaoRequest transacao)
+    internal async Task<IResult> Transacao(int id, TransacaoRequest transacao, CancellationToken cancellationToken)
     {
         if (_clientIds.Contains(id) == false) return Results.NotFound();
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         using var conn = new NpgsqlConnection(_connectionString);
 
@@ -101,17 +103,18 @@ LIMIT 10;
 
         cmd.CommandType = System.Data.CommandType.Text;
 
-        await conn.OpenAsync();
+        await conn.OpenAsync(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
-        using var reader = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.CloseConnection);
+        using var reader = await cmd.ExecuteReaderAsync(System.Data.CommandBehavior.CloseConnection, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
-        await reader.ReadAsync();
+        await reader.ReadAsync(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
         var record = reader.GetFieldValue<object[]>(0);
-        if (record.Length == 1)
-        {
-            throw new InvalidOperationException("Invalid failure code.");
-        }
+        if (record.Length == 1) throw new InvalidOperationException("Invalid failure code.");
+
         var resu = (int)record[0];
 
         await conn.CloseAsync();

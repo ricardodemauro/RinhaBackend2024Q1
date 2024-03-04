@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace RinhaBackend2024Q1;
+namespace RinhaBackend.DbPostgresql;
 
 public class TransacaoRequest
 {

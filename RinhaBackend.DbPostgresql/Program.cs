@@ -1,19 +1,28 @@
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using RinhaBackend.DbPostgresql;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using RinhaBackend2024Q1;
-using System.Net.Mime;
-using System.Text.Json;
 
-
-#if IS_NATIVE_AOT
-var builder = WebApplication.CreateSlimBuilder(args);
-#else
 var builder = WebApplication.CreateBuilder(args);
-#endif
 
-builder.Services.AddHealthChecks()
-    .AddNpgSql(connectionString: builder.Configuration.GetConnectionString("Default"));
+//https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/endpoints?view=aspnetcore-8.0#bind-to-a-unix-socket
+if (string.IsNullOrEmpty(builder.Configuration["SOCKET_ADDRESS"]) == false)
+{
+    var socketAddress = builder.Configuration["SOCKET_ADDRESS"];
+    
+    if(File.Exists(socketAddress)) File.Delete(socketAddress);
+
+    Console.WriteLine("Listening to socket address " + socketAddress);
+
+    builder.WebHost.ConfigureKestrel((ctx, opts) =>
+    {
+        opts.ListenUnixSocket(socketAddress);
+
+        //if (builder.Environment.IsDevelopment()) opts.ListenLocalhost(9888);
+    });
+}
+
+builder.Services.AddAndConfigureHealthChecks(builder.Configuration);
+builder.Services.AddAndConfigureRequestTimeout(builder.Configuration);
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -22,40 +31,29 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var app = builder.Build();
 
-DbService db = new DbService(builder.Configuration.GetConnectionString("Default"));
+app.IncludeRequestTimeout(builder.Configuration);
+app.IncludeHealhCheck(builder.Configuration);
 
-app.MapGet("/", () => $"Hello from {Environment.GetEnvironmentVariable("TRAIL")}");
-
-app.UseHealthChecks("/healthz", new HealthCheckOptions
-{
-    Predicate = _ => true,
-    ResponseWriter = async (context, report) =>
-    {
-        var result = JsonSerializer.Serialize(
-            new
-            {
-                status = report.Status.ToString(),
-                monitors = report.Entries.Select(e => new { key = e.Key, value = Enum.GetName(typeof(HealthStatus), e.Value.Status) })
-            });
-        context.Response.ContentType = MediaTypeNames.Application.Json;
-        await context.Response.WriteAsync(result);
-    }
-});
+DbPostgreSql db = new DbPostgreSql(builder.Configuration.GetConnectionString("Default"));
 
 app.MapPost("/clientes/{id}/transacoes",
-    async ([FromRoute] int id, [FromBody] TransacaoRequest transacaoRequest) =>
+     [RequestTimeout(milliseconds: 2000)] async ([FromRoute] int id,
+        [FromBody] TransacaoRequest transacaoRequest,
+        CancellationToken cancellationToken) =>
     {
         if (transacaoRequest?.IsValid() == true)
         {
-            return await db.Transacao(id, transacaoRequest);
+            return await db.Transacao(id, transacaoRequest, cancellationToken);
         }
         return Results.UnprocessableEntity();
     });
 
 app.MapGet("/clientes/{id}/extrato",
-    async ([FromRoute] int id, CancellationToken cancellationToken) =>
+     [RequestTimeout(milliseconds: 2000)] async ([FromRoute] int id, CancellationToken cancellationToken) =>
     {
         return await db.Extrato(id, cancellationToken);
     });
+
+app.MapGet("/", () => $"Hello from {builder.Configuration["TRAIL"]}");
 
 app.Run();

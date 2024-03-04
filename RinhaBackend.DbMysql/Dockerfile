@@ -10,18 +10,21 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-COPY ["RinhaBackend2024Q1.csproj", "."]
-RUN dotnet restore "./RinhaBackend2024Q1.csproj"
+COPY ["RinhaBackend.DbMysql.csproj", "."]
+RUN dotnet restore "./RinhaBackend.DbMysql.csproj"
 COPY . .
 
 WORKDIR "/src/."
-RUN dotnet build "./RinhaBackend2024Q1.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./RinhaBackend.DbMysql.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./RinhaBackend2024Q1.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./RinhaBackend.DbMysql.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+RUN dotnet dev-certs https -ep /app/publish/https/aspnetapp.pfx -p password.123
+RUN chmod 0444 /app/publish/https/aspnetapp.pfx
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "RinhaBackend2024Q1.dll"]
+ENTRYPOINT ["dotnet", "RinhaBackend.DbMysql.dll"]

@@ -1,4 +1,4 @@
-﻿namespace RinhaBackend2024Q1;
+﻿namespace RinhaBackend.DbMysql;
 
 public static class Validators
 {

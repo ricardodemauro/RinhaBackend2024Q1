@@ -3,8 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
+
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RinhaBackend.DbPostgresql", "RinhaBackend.DbPostgresql\RinhaBackend.DbPostgresql.csproj", "{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}"
 EndProject
+
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RinhaBackend.DbMysql", "RinhaBackend.DbMysql\RinhaBackend.DbMysql.csproj", "{F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4}"
+EndProject
+
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FABEDFF9-7127-4514-BE90-79522946CF60}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SQL", "SQL", "{096EFCB5-1C6D-46CF-BDA4-0F8036DDC955}"
@@ -24,6 +29,12 @@ Global
 		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE88CD92-E82E-4F14-AC0D-AEB0035D9AC3}.Release|Any CPU.Build.0 = Release|Any CPU
+
+{F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4}.Release|Any CPU.Build.0 = Release|Any CPU
+
 		{4937CDA6-9F44-4D81-A498-08280331FA40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4937CDA6-9F44-4D81-A498-08280331FA40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4937CDA6-9F44-4D81-A498-08280331FA40}.Release|Any CPU.ActiveCfg = Release|Any CPU
