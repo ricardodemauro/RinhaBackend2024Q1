@@ -29,3 +29,57 @@ Content-Type: application/json
     "tipo" : "d",
     "descricao" : "descricao"
 }
+
+
+###
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+    "valor": 400,
+    "descricao" : "descricao"
+}
+
+###
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+    "valor": 400,
+    "tipo" : "d",
+    "descricao" : "descricao sadsdsdsddsdsdssdsdsddssddssd"
+}
+
+###
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+    "valor": 400,
+    "tipo" : "d",
+    "descricao" : ""
+}
+
+###
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+    "valor": 400,
+    "tipo" : "d",
+    "descricao" : null
+}
+
+###
+
+POST http://localhost:9999/clientes/1/transacoes
+Content-Type: application/json
+
+{
+    "valor": 400,
+    "tipo" : "d"
+}
