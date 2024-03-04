@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  api1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rinhaapi1
+    network_mode: host
+    environment: 
+      ConnectionStrings__Default: Server=127.0.0.1;Database=rinha;Uid=root;Pwd=password.123;
+      ASPNETCORE_ENVIRONMENT: Production
+      #ASPNETCORE_URLS: http://+:8097
+      ASPNETCORE_URLS: https://+:9997;http://+:8097
+      ASPNETCORE_Kestrel__Certificates__Default__Password: password.123
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /app/https/aspnetapp.pfx
+      TRAIL: P_1
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1000000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.3'
+          memory: '80MB'
+
+  db:
+    image: postgres:16.2
+    container_name: rinhadb
+    network_mode: host
+    command: 'postgres -c max_connections=300 -c shared_buffers=96MB -c checkpoint_timeout=600 -c synchronous_commit=off -c fsync=off -c full_page_writes=off -c work_mem=16MB'
+    hostname: db
+    environment:
+      - POSTGRES_PASSWORD=rinha
+      - POSTGRES_USER=rinha
+      - POSTGRES_DB=rinha
+    volumes:
+      #- ./sql/ddl.sql:/docker-entrypoint-initdb.d/01-ddl.sql:ro
+      #- ./sql/criartransacao.sql:/docker-entrypoint-initdb.d/11-criartransacao.sql:ro
+      #- ./sql/resetdb.sql:/docker-entrypoint-initdb.d/21-resetdb.sql:ro
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '256MB'
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    network_mode: host
+    environment:
+      PGADMIN_DEFAULT_EMAIL: radmin@email.com
+      PGADMIN_DEFAULT_PASSWORD: password.123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    restart: unless-stopped
